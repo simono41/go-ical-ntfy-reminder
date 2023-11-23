@@ -33,7 +33,7 @@ Before you begin, ensure you have the following installed:
 3. **Build and run the Docker container:**
 
     ```bash
-    docker-compose up --build
+    docker compose up --build
     ```
 
    This command uses Docker Compose to build and run the container, loading environment variables from the `.env` file.
@@ -46,6 +46,16 @@ Before you begin, ensure you have the following installed:
 
 - If your application uses additional environment variables, add them to the `.env` file.
 - Customize the Dockerfile or docker-compose.yml if needed.
+
+## Running as a Cronjob
+
+To run your application as a daily cronjob at 6 AM, add the following cronjob entry:
+
+```cron
+0 6 * * * docker compose -f /opt/containers/mail-reminder/docker-compose.yml up --build --exit-code-from go-app
+```
+
+This cronjob will execute the Docker Compose command daily at 6 AM.
 
 ## Contributing
 
