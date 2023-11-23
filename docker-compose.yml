@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  go-app:
+    build:
+      context: .
+    env_file: .env
+    volumes:
+      - /opt/containers/mailu/dav/collection-root:/dav:ro
+
+  cron:
+    image: alpine:latest
+    volumes:
+      - ./cron-job.sh:/etc/periodic/daily/cron-job
+    command: ["crond", "-f", "-d", "8"]
