@@ -133,7 +133,7 @@ func sendMessage(messageSubject string, messageText string) {
 	req, _ := http.NewRequest("POST", NTFY_HOST,
 		strings.NewReader(messageText))
 	req.Header.Set("Title", messageSubject)
-	req.Header.Set("Authorization", "Basic "+NTFY_AUTH)
+	req.Header.Set("Authorization", NTFY_AUTH)
 	req.Header.Set("Email", TO_EMAIL)
 	req.Header.Set("Tags", "date,octopus")
 	req.Header.Set("Priority", "high")
