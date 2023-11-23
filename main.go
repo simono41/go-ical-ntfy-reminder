@@ -86,18 +86,9 @@ func getNotifications(file string) {
 	}
 	defer f.Close()
 
-	var tzMapping = map[string]string{
-		"My Super Zone": "Europe/Berlin",
-	}
+	tz, _ := time.LoadLocation("Europe/Berlin")
 
-	gocal.SetTZMapper(func(s string) (*time.Location, error) {
-		if tzid, ok := tzMapping[s]; ok {
-			return time.LoadLocation(tzid)
-		}
-		return nil, fmt.Errorf("")
-	})
-
-	start, end := truncateToDay(time.Now()), truncateToDay(time.Now()).Add(24*60*time.Minute)
+	start, end := truncateToDay(time.Now(), tz), truncateToDay(time.Now(), tz).Add(24*60*time.Minute)
 
 	c := gocal.NewParser(f)
 	c.Start, c.End = &start, &end
@@ -115,7 +106,7 @@ func getNotifications(file string) {
 		if len(e.Description) != 0 {
 			messageText += fmt.Sprintf("\n\nFolgende Notiz existiert in diesen Eintrag: \n%s", e.Description)
 		}
-		messageText += "\n\n This message is a service from go-ical-ntfy-reminder Version 1.0 written in Golang. \n Delivered by Simon Rieger"
+		messageText += "\n\n This message is a service from go-ical-ntfy-reminder Version 1.1 written in Golang. \n Delivered by Simon Rieger"
 
 		for _, toAddress := range toAddresses {
 			sendMessage(messageSubject, messageText, toAddress)
@@ -123,8 +114,8 @@ func getNotifications(file string) {
 	}
 }
 
-func truncateToDay(t time.Time) time.Time {
-	return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
+func truncateToDay(t time.Time, tz *time.Location) time.Time {
+	return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, tz)
 }
 
 func sendMessage(messageSubject string, messageText string, toAddress string) {
