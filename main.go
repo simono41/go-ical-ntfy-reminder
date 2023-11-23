@@ -80,10 +80,14 @@ func listFilesForFolder(folder string) {
 			continue
 		}
 
-		// Hier kannst du die Dateinamen ausgeben oder damit arbeiten.
-		log.Println(datei.Name())
+		filename := datei.Name()
 
-		getNotifications(folder + "/" + datei.Name())
+		// Überprüfe, ob die Datei eine .ics-Datei ist
+		if strings.HasSuffix(strings.ToLower(filename), ".ics") {
+			log.Info("Gefundene .ics-Datei:", filename)
+			// Hier kannst du weitere Aktionen für die gefundene Datei durchführen
+			getNotifications(folder + "/" + filename)
+		}
 	}
 }
 
