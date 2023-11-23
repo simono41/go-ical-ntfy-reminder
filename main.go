@@ -14,6 +14,7 @@ var (
 	TO_EMAIL  string
 	NTFY_AUTH string
 	NTFY_HOST string
+	LOCATION  string
 )
 
 func main() {
@@ -28,6 +29,13 @@ func main() {
 	TO_EMAIL = os.Getenv("TO_EMAIL")
 	NTFY_AUTH = os.Getenv("NTFY_AUTH")
 	NTFY_HOST = os.Getenv("NTFY_HOST")
+	LOCATION = os.Getenv("LOCATION")
+
+	// Überprüfen, ob die Umgebungsvariable leer ist
+	if LOCATION == "" {
+		// Setzen Sie einen Standardwert, wenn die Umgebungsvariable leer ist
+		LOCATION = "Europe/Berlin"
+	}
 
 	// Get the current working directory
 	dir, err := os.Getwd()
@@ -44,7 +52,7 @@ func main() {
 
 	folders := strings.Split(folderList, ",")
 	for _, folder := range folders {
-		log.Infof("folder: %s to: %s password: %s host: %s", folder, TO_EMAIL, NTFY_AUTH, NTFY_HOST)
+		log.Infof("folder: %s to: %s password: %s host: %s location: %s", folder, TO_EMAIL, NTFY_AUTH, NTFY_HOST, LOCATION)
 		listFilesForFolder(folder)
 	}
 }
@@ -86,7 +94,7 @@ func getNotifications(file string) {
 	}
 	defer f.Close()
 
-	tz, _ := time.LoadLocation("Europe/Berlin")
+	tz, _ := time.LoadLocation(LOCATION)
 
 	start, end := truncateToDay(time.Now(), tz), truncateToDay(time.Now(), tz).Add(24*60*time.Minute)
 

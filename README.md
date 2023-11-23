@@ -25,6 +25,7 @@ Before you begin, ensure you have the following installed:
     TO_EMAIL=recipient@example.com (optional)
     NTFY_AUTH=echo "Basic $(echo -n 'testuser:fakepassword' | base64)"
     NTFY_HOST=https://ntfy.sh/alerts
+    LOCATION=Europe/Berlin (default)
     ICS_DIR=/path/to/ics/files
     ```
 
