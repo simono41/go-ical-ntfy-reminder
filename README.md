@@ -22,7 +22,7 @@ Before you begin, ensure you have the following installed:
    Create a file named `.env` in your project directory. Fill this file with the required environment variables:
 
     ```env
-    TO_EMAIL=recipient@example.com
+    TO_EMAIL=recipient@example.com (optional)
     NTFY_AUTH=echo "Basic $(echo -n 'testuser:fakepassword' | base64)"
     NTFY_HOST=https://ntfy.sh/alerts
     ICS_DIR=/path/to/ics/files

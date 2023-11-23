@@ -11,9 +11,9 @@ import (
 )
 
 var (
-	toAddresses []string
-	authString  string
-	hostString  string
+	TO_EMAIL  string
+	NTFY_AUTH string
+	NTFY_HOST string
 )
 
 func main() {
@@ -25,9 +25,9 @@ func main() {
 	log.Info("Hello World!")
 
 	// Read environment variables
-	toAddresses = strings.Split(os.Getenv("TO_EMAIL"), ",")
-	authString = os.Getenv("NTFY_AUTH")
-	hostString = os.Getenv("NTFY_HOST")
+	TO_EMAIL = os.Getenv("TO_EMAIL")
+	NTFY_AUTH = os.Getenv("NTFY_AUTH")
+	NTFY_HOST = os.Getenv("NTFY_HOST")
 
 	// Get the current working directory
 	dir, err := os.Getwd()
@@ -38,13 +38,13 @@ func main() {
 
 	// Read and split multiple folders
 	folderList := os.Getenv("ICS_DIR")
-	if folderList == "" || len(toAddresses) == 0 || authString == "" || hostString == "" {
-		log.Fatal("Es fehlen noch einige Parameter!!!\nICS_DIR, TO_EMAIL, NTFY_AUTH, NTFY_HOST")
+	if folderList == "" || NTFY_AUTH == "" || NTFY_HOST == "" {
+		log.Fatal("Es fehlen noch einige Parameter!!!\nICS_DIR, NTFY_AUTH, NTFY_HOST")
 	}
 
 	folders := strings.Split(folderList, ",")
 	for _, folder := range folders {
-		log.Infof("folder: %s to: %s password: %s host: %s", folder, toAddresses, authString, hostString)
+		log.Infof("folder: %s to: %s password: %s host: %s", folder, TO_EMAIL, NTFY_AUTH, NTFY_HOST)
 		listFilesForFolder(folder)
 	}
 }
@@ -108,9 +108,7 @@ func getNotifications(file string) {
 		}
 		messageText += "\n\n This message is a service from go-ical-ntfy-reminder Version 1.1 written in Golang. \n Delivered by Simon Rieger"
 
-		for _, toAddress := range toAddresses {
-			sendMessage(messageSubject, messageText, toAddress)
-		}
+		sendMessage(messageSubject, messageText)
 	}
 }
 
@@ -118,13 +116,13 @@ func truncateToDay(t time.Time, tz *time.Location) time.Time {
 	return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, tz)
 }
 
-func sendMessage(messageSubject string, messageText string, toAddress string) {
+func sendMessage(messageSubject string, messageText string) {
 
-	req, _ := http.NewRequest("POST", hostString,
+	req, _ := http.NewRequest("POST", NTFY_HOST,
 		strings.NewReader(messageText))
 	req.Header.Set("Title", messageSubject)
-	req.Header.Set("Authorization", "Basic "+authString)
-	req.Header.Set("Email", toAddress)
+	req.Header.Set("Authorization", "Basic "+NTFY_AUTH)
+	req.Header.Set("Email", TO_EMAIL)
 	req.Header.Set("Tags", "date,octopus")
 	req.Header.Set("Priority", "high")
 	do, err := http.DefaultClient.Do(req)
