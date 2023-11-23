@@ -1,23 +1,19 @@
 package main
 
 import (
-	"crypto/tls"
 	"fmt"
 	"github.com/apognu/gocal"
 	log "github.com/sirupsen/logrus"
-	gomail "gopkg.in/mail.v2"
+	"net/http"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 )
 
 var (
-	fromString     string
-	toAddresses    []string
-	passwordString string
-	hostString     string
-	hostPortString int
+	toAddresses []string
+	authString  string
+	hostString  string
 )
 
 func main() {
@@ -28,22 +24,10 @@ func main() {
 
 	log.Info("Hello World!")
 
-	// Initialisiere err mit einem Fehlerwert
-	var err error
-
 	// Read environment variables
-	fromString = os.Getenv("FROM_EMAIL")
 	toAddresses = strings.Split(os.Getenv("TO_EMAIL"), ",")
-	passwordString = os.Getenv("EMAIL_PASSWORD")
-	hostString = os.Getenv("SMTP_HOST")
-	hostPortString, err = strconv.Atoi(os.Getenv("SMTP_PORT"))
-
-	// Überprüfung auf Fehler
-	if err != nil {
-		fmt.Println("Fehler bei der Umwandlung. Verwende Standardwert 587.")
-		// Setze einen Standardwert, zum Beispiel 0
-		hostPortString = 587
-	}
+	authString = os.Getenv("NTFY_AUTH")
+	hostString = os.Getenv("NTFY_HOST")
 
 	// Get the current working directory
 	dir, err := os.Getwd()
@@ -54,13 +38,13 @@ func main() {
 
 	// Read and split multiple folders
 	folderList := os.Getenv("ICS_DIR")
-	if folderList == "" || fromString == "" || len(toAddresses) == 0 || passwordString == "" || hostString == "" {
-		log.Fatal("Es fehlen noch einige Parameter!!!\nICS_DIR, FROM_EMAIL, TO_EMAIL, EMAIL_PASSWORD, SMTP_HOST")
+	if folderList == "" || len(toAddresses) == 0 || authString == "" || hostString == "" {
+		log.Fatal("Es fehlen noch einige Parameter!!!\nICS_DIR, TO_EMAIL, NTFY_AUTH, NTFY_HOST")
 	}
 
 	folders := strings.Split(folderList, ",")
 	for _, folder := range folders {
-		log.Infof("folder: %s from: %s to: %s password: %s host: %s", folder, fromString, toAddresses, passwordString, hostString)
+		log.Infof("folder: %s to: %s password: %s host: %s", folder, toAddresses, authString, hostString)
 		listFilesForFolder(folder)
 	}
 }
@@ -131,10 +115,10 @@ func getNotifications(file string) {
 		if len(e.Description) != 0 {
 			messageText += fmt.Sprintf("\n\nFolgende Notiz existiert in diesen Eintrag: \n%s", e.Description)
 		}
-		messageText += "\n\n This email is a service from mail-reminder Version 1.0 written in Golang. \n Delivered by Simon Rieger"
+		messageText += "\n\n This message is a service from go-ical-ntfy-reminder Version 1.0 written in Golang. \n Delivered by Simon Rieger"
 
 		for _, toAddress := range toAddresses {
-			sendMail(messageSubject, messageText, toAddress)
+			sendMessage(messageSubject, messageText, toAddress)
 		}
 	}
 }
@@ -143,32 +127,20 @@ func truncateToDay(t time.Time) time.Time {
 	return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
 }
 
-func sendMail(messageSubject string, messageText string, toAddress string) {
-	m := gomail.NewMessage()
+func sendMessage(messageSubject string, messageText string, toAddress string) {
 
-	// Set E-Mail sender
-	m.SetHeader("From", fromString)
-
-	// Set E-Mail receivers
-	m.SetHeader("To", toAddress)
-
-	// Set E-Mail subject
-	m.SetHeader("Subject", messageSubject)
-
-	// Set E-Mail body. You can set plain text or html with text/html
-	m.SetBody("text/plain", messageText)
-
-	// Settings for SMTP server
-	d := gomail.NewDialer(hostString, hostPortString, fromString, passwordString)
-
-	// This is only needed when SSL/TLS certificate is not valid on server.
-	// In production this should be set to false.
-	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
-
-	// Now send E-Mail
-	if err := d.DialAndSend(m); err != nil {
-		log.Fatal(err)
-		panic(err)
+	req, _ := http.NewRequest("POST", hostString,
+		strings.NewReader(messageText))
+	req.Header.Set("Title", messageSubject)
+	req.Header.Set("Authorization", "Basic "+authString)
+	req.Header.Set("Email", toAddress)
+	req.Header.Set("Tags", "date,octopus")
+	req.Header.Set("Priority", "high")
+	do, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Fatal("Ntfy Message not Sent Successfully, Error: " + err.Error())
+		return
 	}
-	log.Infof("Email Message Sent Successfully")
+
+	log.Infof("Ntfy Message Sent Successfully, Status: " + do.Status)
 }

@@ -10,7 +10,7 @@ RUN go mod download
 
 COPY *.go ./
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /docker-mail-reminder
+RUN CGO_ENABLED=0 GOOS=linux go build -o /main
 
 # Run the tests in the container
 FROM build-stage AS run-test-stage
@@ -21,10 +21,10 @@ FROM gcr.io/distroless/base-debian11 AS build-release-stage
 
 WORKDIR /
 
-COPY --from=build-stage /docker-mail-reminder /docker-mail-reminder
+COPY --from=build-stage /main /main
 
 #EXPOSE 8080
 
 USER nonroot:nonroot
 
-ENTRYPOINT ["/docker-mail-reminder"]
+ENTRYPOINT ["/main"]

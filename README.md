@@ -1,6 +1,6 @@
-# Your Go Application
+# GO ical ntfy reminder
 
-This is a simple Go application that does iCalendar files (.ics) analyzes and sends notifications by email based on the events in these iCalendar files.
+This is a simple Go application that does iCalendar files (.ics) analyzes and sends notifications by ntfy based on the events in these iCalendar files.
 
 ## Prerequisites
 
@@ -14,7 +14,7 @@ Before you begin, ensure you have the following installed:
 1. **Clone the repository:**
 
     ```bash
-    git clone <repository-url>
+    git clone https://code.brothertec.eu/simono41/go-ical-ntfy-reminder.git
     ```
 
 2. **Create an environment variables file:**
@@ -22,11 +22,9 @@ Before you begin, ensure you have the following installed:
    Create a file named `.env` in your project directory. Fill this file with the required environment variables:
 
     ```env
-    FROM_EMAIL=user@example.com
     TO_EMAIL=recipient@example.com
-    EMAIL_PASSWORD=your_password
-    SMTP_HOST=smtp.example.com
-    SMTP_PORT=587
+    NTFY_AUTH=echo "Basic $(echo -n 'testuser:fakepassword' | base64)"
+    NTFY_HOST=https://ntfy.sh/alerts
     ICS_DIR=/path/to/ics/files
     ```
 
