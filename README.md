@@ -34,7 +34,7 @@ Before you begin, ensure you have the following installed:
 3. **Build and run the Docker container:**
 
     ```bash
-    docker compose up --build
+    docker compose up -d --build
     ```
 
    This command uses Docker Compose to build and run the container, loading environment variables from the `.env` file.
